@@ -1,12 +1,12 @@
 {
     "name": "kura/kura-client",
-    "description": "kuraøÕªß∂À",
+    "description": "kura-client",
     "license": "",
     "keywords": ["kura", "kura-client", "soa"],
     "version": "1.0.1",
     "authors": [
         {
-            "name": "“∂…œ“π",
+            "name": "suruibuas",
             "email": "317953536@qq.com"
         }
     ],
