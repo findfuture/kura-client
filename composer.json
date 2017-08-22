@@ -2,7 +2,7 @@
     "name": "kura/kura-client",
     "description": "kura客户端",
     "license": "",
-    "keywords": ["kura", "kura-client", "soa", "微服务"],
+    "keywords": ["kura", "kura-client", "soa"],
     "version": "1.0.1",
     "authors": [
         {
