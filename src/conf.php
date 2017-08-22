@@ -1,6 +1,6 @@
 <?php
 
-	namespace kura-client;
+	namespace kuraclient;
 
     define('CONF', TRUE);
 

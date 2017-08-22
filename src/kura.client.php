@@ -13,7 +13,7 @@
     * -----------------------------------------------
     */
 
-	namespace kura-client;
+	namespace kuraclient;
 
     class Kura{
         
