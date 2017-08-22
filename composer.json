@@ -1,0 +1,19 @@
+{
+    "name": "kura/kura-client",
+    "description": "kura客户端",
+    "license": "",
+    "keywords": ["kura", "kura-client", "soa", "微服务"],
+    "version": "1.0.1",
+    "authors": [
+        {
+            "name": "叶上夜",
+            "email": "317953536@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-4": {"kura\\": "src/kura"}
+    }
+}
