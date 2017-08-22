@@ -1,7 +1,7 @@
 {
     "name": "kura/kura-client",
     "description": "kura-client",
-    "license": "",
+    "license": "MIT",
     "keywords": ["kura", "kura-client", "soa"],
     "version": "1.0.1",
     "authors": [
