@@ -1,7 +1,5 @@
 <?php
 
-	namespace kuraclient;
-
     define('CONF', TRUE);
 
     /*
