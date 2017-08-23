@@ -3,7 +3,7 @@
     "description": "kura-client",
     "license": "MIT",
     "keywords": ["kura", "kura-client", "soa"],
-    "version": "1.0.3",
+    "version": "1.0.4",
     "authors": [
         {
             "name": "suruibuas",
