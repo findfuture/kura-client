@@ -15,7 +15,7 @@
 
 	namespace Kura;
 
-    class kuraClient{
+    class Client{
         
         //配置信息
         private $_config;
