@@ -15,5 +15,6 @@
     },
     "autoload": {
         "psr-4": {"kuraclient\\": "src/kura-client"}
-    }
+    },
+    "minimum-stability": "dev",
 }
