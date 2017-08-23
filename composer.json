@@ -1,6 +1,7 @@
 {
     "name": "suruibuas/kura-client",
     "description": "kura-client",
+    "minimum-stability": "dev",
     "license": "MIT",
     "keywords": ["kura", "kura-client", "soa"],
     "version": "1.0.1",
