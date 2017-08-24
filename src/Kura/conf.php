@@ -10,7 +10,7 @@
     $conf['SOA']     = 'xxx';
     //SOA密钥
     $conf['SOAKEY']  = 'xxx';
-    //项目名称，例如：可来
+    //项目名称，例如：xxx
     $conf['PRONAME'] = 'xxx';
     //项目地址，例如：http://www.xxx.com/
     $conf['PROURL']  = 'xxx';
