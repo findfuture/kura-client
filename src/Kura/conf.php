@@ -1,7 +1,5 @@
 <?php
 
-    define('CONF', TRUE);
-
     /*
      * 库拉客户端配置
      */
@@ -14,7 +12,7 @@
     $conf['SOAKEY']  = 'xxx';
     //项目名称，例如：可来
     $conf['PRONAME'] = 'xxx';
-    //项目地址，例如：http://kline.123.com.cn/
+    //项目地址，例如：http://www.xxx.com/
     $conf['PROURL']  = 'xxx';
     //开发环境,0：测试，1：生产
     $conf['ONLINE']  = 0;
