@@ -4,7 +4,7 @@
     * -----------------------------------------------
     * 云掌财经SOA微服务框架SERVICE客户端SDK
     * -----------------------------------------------
-    * 版本：1.0.1
+    * 版本：1.0.4
     * 开发人员：苏睿 / surui@123.com.cn
     * 最后更新日期：2017/06/21
     * -----------------------------------------------
@@ -13,7 +13,8 @@
     * -----------------------------------------------
     */
 
-	namespace Kura;
+    namespace Kura;
+    use React\Promise\Deferred;
 
     class Client{
         
@@ -35,6 +36,12 @@
         private $_customEid;
         //自定义实例配置信息
         private $_custom;
+        //批量CURL句柄
+        private $_multiCurl;
+        //任务队列
+        private $_tasks = [];
+        //延迟队列
+        private $_deferred = [];
         
         public function __construct()
         {
@@ -109,6 +116,15 @@
             $end = microtime(TRUE);
             $this->_debug['_time'] = round($end - $start, 5);
             $this->_debug['_allTime'] = 0;
+            $this->_multiCurl = curl_multi_init();
+            if ( ! $this->_multiCurl)
+            {
+                $this->_error(array(
+                    'code' => 101,
+                    'msg'  => 'CURL初始化失败'
+                ));
+            }
+            spl_autoload_register('Kura\Client::_load');
         }
         
         //调用服务,GET方式
@@ -272,6 +288,99 @@
             }
         }
         
+        //添加任务
+        public function add($param, $key = null, $eid = 0)
+        {
+            if (is_null($key))
+            {
+                $key = count($this->_tasks);
+            }
+            if ( ! isset($param['url']) || $param['url'] == '')
+            {
+                error(102, '请指定需要调用的服务URL地址');
+            }
+            //获得单个任务句柄
+            $curl = $this->_http($param, 0, 1, $eid);
+            //加入任务队列
+            $this->_tasks[$key] = $curl;
+            curl_multi_add_handle($this->_multiCurl, $curl);
+            //加入延迟队列
+            $deferred = new Deferred();
+            $this->_deferred[$key] = $deferred;
+            return $this;
+        }
+        
+        //批量执行任务
+        public function run($debug = FALSE)
+        {
+            //输出
+            $result = [];
+            //开始遍历任务
+            do{
+                while (($code = curl_multi_exec($this->_multiCurl, $active)) == CURLM_CALL_MULTI_PERFORM);
+                //处理完毕立即跳出
+                if ($code != CURLM_OK)
+                {
+                    break;
+                }
+                //遍历所有任务，找出完成的
+                while ($done = curl_multi_info_read($this->_multiCurl)) {
+                    //执行信息
+                    $info  = curl_getinfo($done['handle']);
+                    //错误信息
+                    $error = curl_error($done['handle']);
+                    //错误编号
+                    $errno = curl_errno($done['handle']);
+                    //返回内容
+                    $cont  = curl_multi_getcontent($done['handle']);
+                    $taskName = $task = null;
+                    //这里是为了在任务队列中找到完成的那一个
+                    foreach ($this->_tasks as $taskName => $task)
+                    {
+                        if ($done['handle'] == $task)
+                        break;
+                    }
+                    //确定延迟队列的句柄
+                    $deferred = $this->_deferred[$taskName];
+                    //如果有错误则通知延迟队列一个失败信息并跳过
+                    if ($errno != 0)
+                    {
+                        $deferred->reject(array(
+                            'info'  => $info,
+                            'error' => $error,
+                            'errno' => $errno,
+                            'cont'  => $cont
+                        ));
+                        continue;
+                    }
+                    //成功通知
+                    $deferred->resolve(array(
+                        'info'  => $info,
+                        'error' => $error,
+                        'errno' => $errno,
+                        'cont'  => $cont
+                    ));
+                    $cont = json_decode($cont, TRUE);
+                    if ($debug)
+                    {
+                        $result[$taskName] = compact('info', 'error', 'errno', 'cont');
+                    }
+                    else
+                    {
+                        $result[$taskName] = $cont;
+                    }
+                    curl_multi_remove_handle($this->_multiCurl, $done['handle']);
+                    curl_close($done['handle']);
+                }
+                if ($active > 0)
+                {
+                    curl_multi_select($this->_multiCurl, 0.05);
+                }
+            } while($active);
+            curl_multi_close($this->_multiCurl);
+            return $result;
+        }
+        
         //输出错误信息
         private function _error($return = '')
         {
@@ -368,13 +477,14 @@
         }
         
         //发送HTTP请求
-        private function _http($param = array(), $soa = FALSE)
+        private function _http($param = array(), $soa = FALSE, $attach = FALSE, $eid = 0)
         {
             if ( ! isset($param['url']))
             {
                 return FALSE;
             }
             //自定义实例
+            if ($eid > 0) $this->_customEid = $eid;
             if ($this->_customEid > 0 && ! $soa)
             {
                 if ( ! $this->_checkService())
@@ -432,6 +542,11 @@
             );
             $curl = curl_init();
             curl_setopt_array($curl, $opts);
+            //返回句柄给异步
+            if ($attach)
+            {
+                return $curl;
+            }
             $return = curl_exec($curl);
             if ( ! $soa)
             $this->_debug[$this->_debugKey]['_return'] = $return;
@@ -441,6 +556,14 @@
                 return $return;
             }
             return json_decode($return, TRUE);
+        }
+        
+        private static function _load($class)
+        {
+            $path = str_replace('\\', DIRECTORY_SEPARATOR, $class);
+            $file = __DIR__.'\\'.$path.'.php';
+            if (file_exists($file))
+                require_once $file;
         }
         
     }
