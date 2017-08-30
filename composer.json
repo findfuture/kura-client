@@ -3,7 +3,7 @@
     "description": "kura-client",
     "license": "MIT",
     "keywords": ["kura", "kura-client", "soa"],
-    "version": "1.0.4",
+    "version": "1.0.5",
     "authors": [
         {
             "name": "suruibuas",
@@ -12,6 +12,9 @@
     ],
     "require": {
         "php": ">=5.3.0"
+    },
+    "require-dev": {
+        "react/promise": ">=2.2.1"
     },
     "autoload": {
         "psr-0": {"Kura\\": "src/"}
