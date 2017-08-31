@@ -11,10 +11,8 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0"
-    },
-    "require-dev": {
-        "react/promise": ">=2.2.1"
+        "php": ">=5.3.0",
+	"react/promise": ">=2.2.1"
     },
     "autoload": {
         "psr-0": {"Kura\\": "src/"}
