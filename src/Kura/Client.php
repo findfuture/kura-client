@@ -113,9 +113,6 @@
             $this->_header    = array();
             $this->_customEid = 0;
             $this->_custom    = array();
-            $end = microtime(TRUE);
-            $this->_debug['_time'] = round($end - $start, 5);
-            $this->_debug['_allTime'] = 0;
             $this->_multiCurl = curl_multi_init();
             if ( ! $this->_multiCurl)
             {
@@ -124,6 +121,9 @@
                     'msg'  => 'CURL初始化失败'
                 ));
             }
+            $end = microtime(TRUE);
+            $this->_debug['_time'] = round($end - $start, 5);
+            $this->_debug['_allTime'] = 0;
         }
         
         //调用服务,GET方式
@@ -290,6 +290,7 @@
         //添加任务
         public function add($param, $key = null, $eid = 0)
         {
+            $s = microtime(TRUE);
             if (is_null($key))
             {
                 $key = count($this->_tasks);
@@ -299,23 +300,27 @@
                 error(102, '请指定需要调用的服务URL地址');
             }
             //获得单个任务句柄
-            $curl = $this->_http($param, 0, 1, $eid);
+            $curl = $this->_http($param, 0, 1, $eid, $key);
             //加入任务队列
             $this->_tasks[$key] = $curl;
             curl_multi_add_handle($this->_multiCurl, $curl);
             //加入延迟队列
             $deferred = new Deferred();
             $this->_deferred[$key] = $deferred;
+            $e = microtime(TRUE);
+            $this->_debug['_time'] += round($e - $s, 5);
             return $this;
         }
         
         //批量执行任务
         public function run($debug = FALSE)
         {
+            $s = microtime(TRUE);
             //输出
             $result = [];
             //开始遍历任务
             do{
+                $start = microtime(TRUE);
                 while (($code = curl_multi_exec($this->_multiCurl, $active)) == CURLM_CALL_MULTI_PERFORM);
                 //处理完毕立即跳出
                 if ($code != CURLM_OK)
@@ -350,6 +355,7 @@
                             'errno' => $errno,
                             'cont'  => $cont
                         ));
+                        $this->_debug[$taskName]['_return'] = '请求失败';
                         continue;
                     }
                     //成功通知
@@ -359,6 +365,7 @@
                         'errno' => $errno,
                         'cont'  => $cont
                     ));
+                    $this->_debug[$taskName]['_return'] = $cont;
                     $cont = json_decode($cont, TRUE);
                     if ($debug)
                     {
@@ -370,6 +377,8 @@
                     }
                     curl_multi_remove_handle($this->_multiCurl, $done['handle']);
                     curl_close($done['handle']);
+                    $end = microtime(TRUE);
+                    $this->_debug[$taskName]['_time'] = round($end - $start, 5);
                 }
                 if ($active > 0)
                 {
@@ -377,6 +386,8 @@
                 }
             } while($active);
             curl_multi_close($this->_multiCurl);
+            $e = microtime(TRUE);
+            $this->_debug['_allTime'] = $this->_debug['_time'] + round($e - $s, 5);
             return $result;
         }
         
@@ -476,7 +487,7 @@
         }
         
         //发送HTTP请求
-        private function _http($param = array(), $soa = FALSE, $attach = FALSE, $eid = 0)
+        private function _http($param = array(), $soa = FALSE, $attach = FALSE, $eid = 0, $debugKey = null)
         {
             if ( ! isset($param['url']))
             {
@@ -502,7 +513,7 @@
                 $url = (isset($this->_config['URL'])) ? $this->_config['URL'] : '';
             }
             $url .= $param['url'];
-            $this->_debugKey = md5($url);
+            $this->_debugKey = is_null($debugKey) ? md5($url) : $debugKey;
             //发送的数据
             $data   = ( ! isset($param['data'])) ? array() : $param['data'];
             //请求模式
