@@ -124,7 +124,6 @@
                     'msg'  => 'CURL初始化失败'
                 ));
             }
-            spl_autoload_register('Kura\Client::_load');
         }
         
         //调用服务,GET方式
@@ -556,14 +555,6 @@
                 return $return;
             }
             return json_decode($return, TRUE);
-        }
-        
-        private static function _load($class)
-        {
-            $path = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-            $file = __DIR__.'\\'.$path.'.php';
-            if (file_exists($file))
-                require_once $file;
         }
         
     }
